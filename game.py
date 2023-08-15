@@ -1,17 +1,19 @@
 from abc import ABC, abstractmethod
 import random
+from event import FlorestEvents, CavernEvent
 
 class Menu:
     def __init__(self):
-        self.game = Game()
+        self.game = None
         self.caracter = None
 
     def create_caracter(self):
-        list_class = ['MAGE', 'SUPORT', 'WARRIOR', 'ARCHER']
-        class_c = input(f'Qual a classe do seu personagem? [{", ".join(list_class)}]')
+        list_class = ['Mage', 'Suport', 'Warrior', 'Archer']
+        class_c = input(f'Qual a classe do seu personagem? [{", ".join(list_class)}]').title()
         nome = input('Qual o nome do seu personagem? ')
-        self.caracter = CaractherPrincipal(nome, class_c)
-        return self.caracter
+        self.caracter = globals()[class_c](nome)
+        self.game = Game(self.caracter)
+        return self.game
     
     def load_game(self):
         pass
@@ -22,7 +24,11 @@ class Menu:
 
 class Game:
     def __init__(self, caracter) -> None:
-        self.caracter = caracter
+        self._caracter = caracter
+    
+    @property
+    def caracter(self):
+        return self._caracter
     
     def generate_monsters(self):
         pass
@@ -44,16 +50,17 @@ class Monster:
 
 class CaractherPrincipal(ABC):
 
-    def __init__(self, name, class_c):
-        self.name = name
-        self.max_life = 100
-        self.level = 1
-        self.attributes = class_c['attributes']
-        self.skill = class_c['skills']
-        self.points_atributes = 0
-        self.ArenaBattle = None
-        self.gold = 100.0
-        self.xp = 0
+    def __init__(self, name):
+        self._name = name
+        self._class_c = self.__class__.__name__
+        self._attributes = {}
+        self._max_life = 100
+        self._level = 1
+        self._points_atributes = 0
+        self._ArenaBattle = None
+        self._gold = 100.0
+        self._xp = 0
+        self._map = Map()
 
     @property
     def xp(self):
@@ -90,6 +97,14 @@ class CaractherPrincipal(ABC):
     @property
     def gold(self):
         return self._gold
+    
+    @property
+    def attributes(self):
+        return self._attributes
+    
+    @property
+    def map(self):
+        return self._map
     
     @staticmethod
     def upgrade_level(self):
@@ -155,17 +170,18 @@ class CaractherPrincipal(ABC):
 
 
 class Mage(CaractherPrincipal):
-    def __init__(self, name, class_c):
-        super().__init__(name, class_c)
-        self.attributes = {
+    def __init__(self, name):
+        super().__init__(name)
+        self._attributes = {
             'force' : '1',
             'agilite' : '1',
             'inteligence' : '3',
             'speed' : '1'
         }
-        self.skills = ['METEORO']
-        self.equipaments_use = ['CAJADO', 'VARINHA']
-        self.accurence_equipament = None
+        self._skills = ['METEORO']
+        self._equipaments_use = ['CAJADO', 'VARINHA']
+        self._accurence_equipament = None
+    
     
     def add_skill_points(self, point):
         pass
@@ -176,10 +192,13 @@ class Mage(CaractherPrincipal):
     
     def skill(self):
         pass
+    
+    def desc(self):
+        print('oi')
 
 class Warrior(CaractherPrincipal):
-    def __init__(self, name, class_c):
-        super().__init__(name, class_c)
+    def __init__(self, name):
+        super().__init__(name)
         self.attributes = {
             'force' : '3',
             'agilite' : '1',
@@ -200,8 +219,8 @@ class Warrior(CaractherPrincipal):
         pass
 
 class Archer(CaractherPrincipal):
-    def __init__(self, name, class_c):
-        super().__init__(name, class_c)
+    def __init__(self, name):
+        super().__init__(name)
         self.attributes = {
             'force' : '1',
             'agilite' : '3',
@@ -249,18 +268,6 @@ class ArenaBattle:
                 player.lose_gold(enemy.level * 5)
                 break
 
-class Event:
-    @staticmethod
-    def hunt(player):
-        print("Você está caçando na floresta.")
-        coin_reward = random.randint(5, 10)
-        player.add_gold(coin_reward)
-        print(f"Você ganhou {coin_reward} moedas.")
-
-    def battle(player, enemy):
-        battle = ArenaBattle()
-        battle.start_battle(player, enemy)
-
 class Map:
     FLOREST = 'florest'
     CAVERN = 'cavern'
@@ -287,9 +294,11 @@ class Map:
 
     def visit_current_location(self):
         if self.current_location == self.FLOREST:
-            florest = Event()
+            florest = FlorestEvents()
+            print(florest.random_next_action())
         elif self.current_location == self.CAVERN:
-            cavern = Event()
+            cavern = CavernEvent()
+            print(cavern.random_next_action())
         elif self.current_location == self.HOUSE:
             print('nothing...')
 
@@ -297,8 +306,8 @@ class Map:
 class Runner:
     def run(self):
         menu = Menu()
-        caracter = menu.create_caracter()
-        game_map = Map()
+        game = menu.create_caracter()
+        game_map = game._caracter.map
 
         while True:
             game_map.choose_destination()

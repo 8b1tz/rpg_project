@@ -24,10 +24,10 @@ class FlorestEvents(BaseEventLoop):
     def __init__(self) -> None:
         self.events =  {
             "andar": [
-                ("Saida da floresta", 2),
-                ("Encontrar um Viajante", 5),
-                ("Encontrar um monstro", 15),
-                ("Continua andando", 78),
+                ("Saiu da floresta", 2),
+                ("Encontrou um Viajante", 5),
+                ("Encontrou um monstro", 15),
+                ("Continuou andando", 78),
             ],
             "explorar": [
                 ("Encontrou uma fruta", 15),

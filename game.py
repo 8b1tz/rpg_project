@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import random
 from event import FlorestEvents, CavernEvent
 
+
 class Menu:
     def __init__(self):
         self.game = None
@@ -61,18 +62,22 @@ class CaractherPrincipal(ABC):
         self._gold = 100.0
         self._xp = 0
         self._map = Map()
-
+        self._current_life = 100
     @property
     def xp(self):
         return self._xp
 
+    @property
+    def current_life(self):
+        return self._current_life
+    
     @property
     def name(self):
         return self._name
 
     @property
     def max_life(self):
-        return self.max_life
+        return self._max_life
     
     @property
     def level(self):
@@ -167,7 +172,9 @@ class CaractherPrincipal(ABC):
     @abstractmethod
     def skill(self):
         pass
-
+    
+    def __str__(self):
+        return f'PLAYER: {self.name} CLASSE: {self.__class__.__name__} LEVEL: {self.level}\nVIDA: {self.max_life} | XP: {self.xp}\{self.xp_to_next_level()}\n'
 
 class Mage(CaractherPrincipal):
     def __init__(self, name):
@@ -242,8 +249,8 @@ class Archer(CaractherPrincipal):
 
 class ArenaBattle:
     def start_battle(self, player, enemy):
-        player_health = player.max_life
-        enemy_health = enemy.max_life
+        player_health = player.current_life
+        enemy_health = enemy.current_life
         
         while player_health > 0 and enemy_health > 0:
             print(f"SUA VIDA: {player_health}/{player.max_life}", f"VIDA DO INIMIGO: {enemy_health}/{enemy.max_life}")
@@ -307,9 +314,10 @@ class Runner:
     def run(self):
         menu = Menu()
         game = menu.create_caracter()
-        game_map = game._caracter.map
+        game_map = game.caracter.map
 
         while True:
+            print(game.caracter)
             game_map.choose_destination()
             game_map.visit_current_location()
 

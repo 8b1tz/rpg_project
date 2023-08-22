@@ -1,48 +1,67 @@
 from itertools import cycle
 from operator import itemgetter
+from arena import ArenaBattle
+from monster import Monster
+from game import Game
+
 import random
 
-class BaseEventLoop:
+class FlorestEvents:
+    monsters = [Monster(100, 1, {'force': 1, 'agilite': 1, 'inteligence': 3, 'speed': 1}),
+                Monster(100, 2, {'force': 1, 'agilite': 1, 'inteligence': 1, 'speed': 1})]
 
-    def __init__(self, list_events) -> None:
-        self.events_cycle = cycle(list_events)
-        
-    def next_event(self):
-        return next(self.events_cycle)
-
-    def random_next_action(self):
-        next_action = self.next_event()
-        weight_sum = sum(map(itemgetter(1), self.events[next_action]))
-        chosen_weight = random.randint(1, weight_sum)
-        iteration_sum = 0
-        for item in self.events[next_action]:
-            iteration_sum += item[1]
-            if chosen_weight <= iteration_sum:
-                return item[0]
-        
-class FlorestEvents(BaseEventLoop):
-    def __init__(self) -> None:
-        self.events =  {
+    def __init__(self, character) -> None:
+        self.character = character
+        self.events = {
             "andar": [
-                ("Saiu da floresta", 2),
-                ("Encontrou um Viajante", 5),
-                ("Encontrou um monstro", 15),
-                ("Continuou andando", 78),
+                ("Saiu da floresta", self.handle_exit_forest),
+                ("Encontrou um Viajante", self.handle_encounter_traveler),
+                ("Encontrou um monstro", self.handle_monster_encounter),
+                ("Continuou andando", self.handle_continue_walking),
             ],
             "explorar": [
-                ("Encontrou uma fruta", 15),
-                ("Encontrou agua potavel", 5),
-                ("Encontrou uma pedra preciosa", 1),
-                ("Falha na exploração", 79),
+                ("Encontrou uma fruta", self.handle_find_fruit),
+                ("Encontrou agua potavel", self.handle_find_water),
+                ("Encontrou uma pedra preciosa", self.handle_find_gem),
+                ("Falha na exploração", self.handle_exploration_failure),
             ],
         }
-        super().__init__(self.events.keys())
 
-class CavernEvent(BaseEventLoop):
+    def generate_event(self, choice):
+        chosen_event = random.choice(self.events[choice])
+        chosen_event()  
+
+    def handle_exit_forest(self):
+        print("Você saiu da floresta.")
+
+    def handle_encounter_traveler(self):
+        print("Você encontrou um Viajante.")
+
+    def handle_monster_encounter(self):
+        monster = random.choice(self.monsters)
+        arena_battle = ArenaBattle()
+        arena_battle.start_battle(self.character, monster)
+
+    def handle_continue_walking(self):
+        print("Você continuou andando.")
+
+    def handle_find_fruit(self):
+        print("Você encontrou uma fruta.")
+
+    def handle_find_water(self):
+        print("Você encontrou água potável.")
+
+    def handle_find_gem(self):
+        print("Você encontrou uma pedra preciosa.")
+
+    def handle_exploration_failure(self):
+        print("Sua exploração falhou.")
+
+class CavernEvent:
     def __init__(self) -> None:
-        self.events =  {
+        self.events = {
             "andar": [
-                ("Saida da floresta", 2),
+                ("Saida da caverna", 2),
                 ("Encontrar um Viajante", 5),
                 ("Encontrar um monstro", 15),
                 ("Continua andando", 78),
@@ -54,4 +73,4 @@ class CavernEvent(BaseEventLoop):
                 ("Falha na exploração", 79),
             ],
         }
-        super().__init__(self.events.keys())
+
